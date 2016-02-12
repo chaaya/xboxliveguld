@@ -1,0 +1,26 @@
+---------- Date: 2016-01-19 19:17:06 ~ IP : 84.23.141.9 ----------
+REQUEST URI : /admin/index.php?route=extension/module&token=fywjEZzUchQ0EzrPQ2k1o84KgQFbs7jG
+MOD DETAILS:
+   modFile   : /www/webvol16/2l/cu9ffy6mb8jhi1f/xboxliveguld.se/public_html/vqmod/xml/a_vqmod_d_quickcheckout.xml
+   id        : AJAX QUICK CHECKOUT V5.0 BY DREAMVENTION
+   version   : 2.0.0.0
+   vqmver    : 2.2.1
+   author    : dreamvention.com
+VQModObject::parseMods - Could not resolve path for [catalog/view/theme/default/template/payment/pp_pro_uk.tpl] (SKIPPED)
+
+----------------------------------------------------------------------
+
+
+---------- Date: 2016-01-19 19:17:21 ~ IP : 84.23.141.9 ----------
+REQUEST URI : /admin/index.php?route=extension/module&token=fywjEZzUchQ0EzrPQ2k1o84KgQFbs7jG
+MOD DETAILS:
+   modFile   : /www/webvol16/2l/cu9ffy6mb8jhi1f/xboxliveguld.se/public_html/vqmod/xml/a_vqmod_d_quickcheckout.xml
+   id        : AJAX QUICK CHECKOUT V5.0 BY DREAMVENTION
+   version   : 2.0.0.0
+   vqmver    : 2.2.1
+   author    : dreamvention.com
+VQModObject::parseMods - Could not resolve path for [catalog/view/theme/default/template/payment/pp_pro_uk.tpl] (SKIPPED)
+
+----------------------------------------------------------------------
+
+
