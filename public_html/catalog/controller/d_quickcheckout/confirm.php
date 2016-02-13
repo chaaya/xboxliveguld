@@ -44,6 +44,7 @@ class ControllerDQuickcheckoutConfirm extends Controller {
 		$orderVerificationCode = $this->generateRandomVerificationCode();
 		$json = array();
 		$json['code'] =  $orderVerificationCode;
+		$orderId = $this->session->data['order_id'];
 
 
 		$this->session->data['email_fraud_protection_order_verification_code'] = $orderVerificationCode;
@@ -64,8 +65,8 @@ class ControllerDQuickcheckoutConfirm extends Controller {
 
 		$mail->setTo($this->session->data['payment_address']['email']);
 		$mail->setFrom($this->config->get('config_email'));
-		$mail->setSender(html_entity_decode('XboxLiveGuld.se', ENT_QUOTES, 'UTF-8'));
-		$mail->setSubject(sprintf('Your order verification code', html_entity_decode('XboxLiveGuld.se', ENT_QUOTES, 'UTF-8')));
+		$mail->setSender(html_entity_decode('XboxLiveGuld.se Security System', ENT_QUOTES, 'UTF-8'));
+		$mail->setSubject(sprintf('Order #' . $orderId . ' verification code', html_entity_decode('XboxLiveGuld.se', ENT_QUOTES, 'UTF-8')));
 		$mail->setText($message);
 		$mail->send();
 		return true;
