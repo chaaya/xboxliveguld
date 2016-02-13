@@ -35,7 +35,8 @@ qc.ConfirmView = qc.View.extend({
 		}
 	},
 
-	validateVerificationCode: function() {
+	validateVerificationCode: function(event) {
+		$(event.currentTarget).button('loading');
 		var code = $('input#fraud_protection_code').val();
 		this.model.validateVerificationCode(code);
 	},

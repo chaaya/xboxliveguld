@@ -53,8 +53,11 @@ qc.Confirm = qc.Model.extend({
 			that.updateForm(data);
 			qc.event.trigger('paymentConfirm');
 			that.recreateOrder();
-		}, 'json').error(
-		);
+		}, 'json').error(function(xhr) {
+				if(xhr.status == 401) {
+					window.location = '/anti_fraud_protection.php';
+				}
+		});
 	},
 
 	recreateOrder: function(){

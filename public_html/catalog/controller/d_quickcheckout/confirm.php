@@ -46,29 +46,29 @@ class ControllerDQuickcheckoutConfirm extends Controller {
 		$json['code'] =  $orderVerificationCode;
 
 
-			$this->session->data['fraud_protection_order_verification_code'] = $orderVerificationCode;
-			$this->session->data['fraud_protection_verified'] = false;
+		$this->session->data['email_fraud_protection_order_verification_code'] = $orderVerificationCode;
+		$this->session->data['email_fraud_protection_verified'] = false;
 
-			$message  = "An order was just made on www.xboxliveguld.se" . "\n";
-			$message .= "You need to confirm the order with the following code: " . $orderVerificationCode . "\n\n";
-			$message .= "If you didnt make the order, please contact PayPal immediately! You may be a victim of fraud.";
+		$message  = "An order was just made on www.xboxliveguld.se" . "\n";
+		$message .= "You need to confirm the order with the following code: " . $orderVerificationCode . "\n\n";
+		$message .= "If you didnt make the order, please contact PayPal immediately! You may be a victim of fraud.";
 
-			$mail = new Mail();
-			$mail->protocol = $this->config->get('config_mail_protocol');
-			$mail->parameter = $this->config->get('config_mail_parameter');
-			$mail->smtp_hostname = $this->config->get('config_mail_smtp_hostname');
-			$mail->smtp_username = $this->config->get('config_mail_smtp_username');
-			$mail->smtp_password = html_entity_decode($this->config->get('config_mail_smtp_password'), ENT_QUOTES, 'UTF-8');
-			$mail->smtp_port = $this->config->get('config_mail_smtp_port');
-			$mail->smtp_timeout = $this->config->get('config_mail_smtp_timeout');
+		$mail = new Mail();
+		$mail->protocol = $this->config->get('config_mail_protocol');
+		$mail->parameter = $this->config->get('config_mail_parameter');
+		$mail->smtp_hostname = $this->config->get('config_mail_smtp_hostname');
+		$mail->smtp_username = $this->config->get('config_mail_smtp_username');
+		$mail->smtp_password = html_entity_decode($this->config->get('config_mail_smtp_password'), ENT_QUOTES, 'UTF-8');
+		$mail->smtp_port = $this->config->get('config_mail_smtp_port');
+		$mail->smtp_timeout = $this->config->get('config_mail_smtp_timeout');
 
-			$mail->setTo($this->session->data['payment_address']['email']);
-			$mail->setFrom($this->config->get('config_email'));
-			$mail->setSender(html_entity_decode('XboxLiveGuld.se', ENT_QUOTES, 'UTF-8'));
-			$mail->setSubject(sprintf('Your order verification code', html_entity_decode('XboxLiveGuld.se', ENT_QUOTES, 'UTF-8')));
-			$mail->setText($message);
-			$mail->send();
-			return true;
+		$mail->setTo($this->session->data['payment_address']['email']);
+		$mail->setFrom($this->config->get('config_email'));
+		$mail->setSender(html_entity_decode('XboxLiveGuld.se', ENT_QUOTES, 'UTF-8'));
+		$mail->setSubject(sprintf('Your order verification code', html_entity_decode('XboxLiveGuld.se', ENT_QUOTES, 'UTF-8')));
+		$mail->setText($message);
+		$mail->send();
+		return true;
 
 	}
 
@@ -76,8 +76,8 @@ class ControllerDQuickcheckoutConfirm extends Controller {
 			  $verificationCode = $this->request->post['code'];
 				$json = array();
 
-				if($verificationCode == $this->session->data['fraud_protection_order_verification_code']) {
-					$this->session->data['fraud_protection_order_verification_code'] = true;
+				if($verificationCode == $this->session->data['email_fraud_protection_order_verification_code']) {
+					$this->session->data['email_fraud_protection_verified'] = true;
 					$json['isValid'] = true;
 				} else {
 					$json['isValid'] = false;
@@ -110,9 +110,40 @@ class ControllerDQuickcheckoutConfirm extends Controller {
         return true;
     }
 
+		private function preformCheckoutAntiFraudControl() {
+		  $continue2Checkout = true;
+		  $orderIsVerifiedByEmail = $this->session->data['email_fraud_protection_verified'];
+
+		  if($orderIsVerifiedByEmail==false) {
+		    $continue2Checkout = false;
+		  } else {
+		    $KEY = "aidyumvzwo6rcrtuxbm54rc3cshy"; // Account API Key
+		    $IP = $_SERVER['REMOTE_ADDR']; // IP to Check for Proxy/VPN status
+		    $UA = $_SERVER['HTTP_USER_AGENT']; // User Browser (optional) - provides better forensics for our algorithm.
+		    $IM = 0; // Ignore Mobile Browsers - If you are passing the browser variable to us with the paramater above and this setting is set to 1 then we will not analyze the IP for mobile browsers. Mobile operators tend to recycle their IPs so proxy tests will frequently list them as false-positives. Set this option to 0 to analyze all mobile browsers.
+		    $STRICT = 1; // This option controls the level of strictness for the lookup. Setting this option higher will increase the chance for false-positives as well as the time needed to perform the IP analysis. Increase this setting if you still continue to see fraudulent IPs with our base setting or decrease this setting for faster lookups with less false-positives. Current options for this parameter are 0 (fastest), 1 (recommended), 2 (more strict), or 3 (strictest).
+		    $ipQualityScoreCheckRequestUrl = 'http://www.ipqualityscore.com/api/ip_lookup.php?KEY='.$KEY.'&IP='.$IP.'&UA='.$UA.'&IM='.$IM.'&STRICT='.$STRICT;
+		    $ipQualityScoreCheckResponse = file_get_contents($ipQualityScoreCheckRequestUrl);
+
+		    if($ipQualityScoreCheckResponse==1) {
+		      $continue2Checkout = false;
+		    }
+		  }
+
+
+
+		  if($continue2Checkout==false) {
+				//clear token that are used for paypal just for security
+				unset($this->session->data['token']);;
+				$this->session->data['ANTI_FRAUD_CHECK_FAILED'] = true;
+				header('HTTP/1.1 401 Unauthorized', true, 401);
+				die();
+		  }
+
+		}
+
     public function update(){
-				$orderIsVerifiedByEmail = $this->session->data['fraud_protection_order_verification_code'];
-				if($orderIsVerifiedByEmail) {
+				$this->preformCheckoutAntiFraudControl();
 				$json = array();
         $this->load->model('account/address');
         $this->load->model('module/d_quickcheckout');
@@ -174,7 +205,7 @@ class ControllerDQuickcheckoutConfirm extends Controller {
 
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
-			}
+
     }
 
     public function updateOrder(){

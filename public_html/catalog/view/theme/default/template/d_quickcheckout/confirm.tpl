@@ -40,7 +40,7 @@
 			      </div>
 			      <div class="modal-footer">
 			        <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
-			        <button id="qc_verfiy_order" type="button" class="btn btn-primary"><i class="fa fa-check"></i> Verify code</button>
+			        <button id="qc_verfiy_order" data-loading-text="Verifying your code...wait" type="button" class="btn btn-primary"><i class="fa fa-check"></i> Verify code</button>
 			      </div>
     </div>
   </div>
