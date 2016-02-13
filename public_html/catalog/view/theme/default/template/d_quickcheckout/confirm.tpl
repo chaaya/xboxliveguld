@@ -36,7 +36,7 @@
 								<input id="fraud_protection_code" class="form-control" placeholder="Enter your 6 digit verification code" type="text" maxlength="6">
 							</div>
 							<p style="font-size: 11px; margin-top: 5px;" class="text-muted text-center">
-								<i style="color: red;" class="fa fa-exclamation-triangle"></i> Anti fraud system verification</p>
+								<i style="color: red;" class="fa fa-exclamation-triangle"></i> Anti fraud system protection</p>
 			      </div>
 			      <div class="modal-footer">
 			        <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Cancel</button>
