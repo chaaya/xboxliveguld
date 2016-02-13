@@ -27,6 +27,26 @@ qc.Confirm = qc.Model.extend({
 
 	},
 
+	sendOrderVerificationCode: function() {
+		var promise = $.post('index.php?route=d_quickcheckout/confirm/sendOrderVerificationCode', {});
+		return promise;
+	},
+
+	validateVerificationCode: function(code) {
+		var _this = this;
+		var data = {
+			'code': code
+		}
+		$.post('index.php?route=d_quickcheckout/confirm/validateCode', data)
+			.then(function(response) {
+				if (response.isValid) {
+					_this.update();
+				} else {
+					window.alert('Your entered a incorrect verification code');
+				}
+		}, 'json');
+	},
+
 	update: function(){
 		var that = this;
 		$.post('index.php?route=d_quickcheckout/confirm/update', {}, function(data) {

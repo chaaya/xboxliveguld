@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 class ControllerDQuickcheckoutConfirm extends Controller {
 
@@ -12,27 +12,79 @@ class ControllerDQuickcheckoutConfirm extends Controller {
             $this->document->addScript('catalog/view/javascript/d_quickcheckout/model/confirm.js');
             $this->document->addScript('catalog/view/javascript/d_quickcheckout/view/confirm.js');
         }
-        
+
         $data['button_confirm'] = $this->language->get('button_confirm');
         $data['button_continue'] = $this->language->get('button_continue');
 
         $data['col'] = $config['account']['guest']['confirm']['column'];
         $data['row'] = $config['account']['guest']['confirm']['row'];
-		
+
         $json['account'] = $this->session->data['account'];
         $json['confirm'] = $this->session->data['confirm'];
 
         $this->load->model('d_quickcheckout/order');
         $json['show_confirm'] = $this->model_d_quickcheckout_order->showConfirm();
         $json['payment_popup'] =  $this->model_d_quickcheckout_method->getPaymentPopup($this->session->data['payment_method']['code']);
-        
-        
+
+
         $data['json'] = json_encode($json);
 		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/d_quickcheckout/confirm.tpl')) {
 			return $this->load->view($this->config->get('config_template') . '/template/d_quickcheckout/confirm.tpl', $data);
 		} else {
 			return $this->load->view('default/template/d_quickcheckout/confirm.tpl', $data);
 		}
+	}
+
+	public function generateRandomVerificationCode() {
+			return sprintf("%06d", mt_rand(1, 999999));
+	}
+
+
+	public function sendOrderVerificationCode() {
+		$orderVerificationCode = $this->generateRandomVerificationCode();
+		$json = array();
+		$json['code'] =  $orderVerificationCode;
+
+
+			$this->session->data['fraud_protection_order_verification_code'] = $orderVerificationCode;
+			$this->session->data['fraud_protection_verified'] = false;
+
+			$message  = "An order was just made on www.xboxliveguld.se" . "\n";
+			$message .= "You need to confirm the order with the following code: " . $orderVerificationCode . "\n\n";
+			$message .= "If you didnt make the order, please contact PayPal immediately! You may be a victim of fraud.";
+
+			$mail = new Mail();
+			$mail->protocol = $this->config->get('config_mail_protocol');
+			$mail->parameter = $this->config->get('config_mail_parameter');
+			$mail->smtp_hostname = $this->config->get('config_mail_smtp_hostname');
+			$mail->smtp_username = $this->config->get('config_mail_smtp_username');
+			$mail->smtp_password = html_entity_decode($this->config->get('config_mail_smtp_password'), ENT_QUOTES, 'UTF-8');
+			$mail->smtp_port = $this->config->get('config_mail_smtp_port');
+			$mail->smtp_timeout = $this->config->get('config_mail_smtp_timeout');
+
+			$mail->setTo($this->session->data['payment_address']['email']);
+			$mail->setFrom($this->config->get('config_email'));
+			$mail->setSender(html_entity_decode('XboxLiveGuld.se', ENT_QUOTES, 'UTF-8'));
+			$mail->setSubject(sprintf('Your order verification code', html_entity_decode('XboxLiveGuld.se', ENT_QUOTES, 'UTF-8')));
+			$mail->setText($message);
+			$mail->send();
+			return true;
+
+	}
+
+	public function validateCode() {
+			  $verificationCode = $this->request->post['code'];
+				$json = array();
+
+				if($verificationCode == $this->session->data['fraud_protection_order_verification_code']) {
+					$this->session->data['fraud_protection_order_verification_code'] = true;
+					$json['isValid'] = true;
+				} else {
+					$json['isValid'] = false;
+				}
+
+				$this->response->addHeader('Content-Type: application/json');
+				$this->response->setOutput(json_encode($json));
 	}
 
 	public function updateField(){
@@ -59,7 +111,9 @@ class ControllerDQuickcheckoutConfirm extends Controller {
     }
 
     public function update(){
-        $json = array();
+				$orderIsVerifiedByEmail = $this->session->data['fraud_protection_order_verification_code'];
+				if($orderIsVerifiedByEmail) {
+				$json = array();
         $this->load->model('account/address');
         $this->load->model('module/d_quickcheckout');
         $this->load->model('d_quickcheckout/address');
@@ -81,7 +135,7 @@ class ControllerDQuickcheckoutConfirm extends Controller {
                     $json['shipping_address']['address_id'] = $this->session->data['shipping_address']['address_id'] = $this->model_account_address->addAddress($this->session->data['shipping_address']);
                 }
             }
-            
+
         }else{
             if($this->session->data['account'] == 'register'){
 
@@ -120,6 +174,7 @@ class ControllerDQuickcheckoutConfirm extends Controller {
 
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
+			}
     }
 
     public function updateOrder(){

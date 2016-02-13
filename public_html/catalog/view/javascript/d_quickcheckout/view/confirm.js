@@ -8,6 +8,7 @@ qc.ConfirmView = qc.View.extend({
 
 	events: {
 		'click button#qc_confirm_order': 'confirm',
+		'click button#qc_verfiy_order': 'validateVerificationCode'
 	},
 
 	template: '',
@@ -23,13 +24,20 @@ qc.ConfirmView = qc.View.extend({
 			}
 		});
 
-		if(valid){
-			this.model.update();
+		if(valid) {
+			this.model.sendOrderVerificationCode().then(function() {
+				$('div#anti_fraud_modal').modal('show');
+			});
 		}
 
 		if(parseInt(config.general.analytics_event)){
 			ga('send', 'event', config.name, 'click', 'confirm.confirm');
 		}
+	},
+
+	validateVerificationCode: function() {
+		var code = $('input#fraud_protection_code').val();
+		this.model.validateVerificationCode(code);
 	},
 
 	changeAccount: function(account){
@@ -38,6 +46,10 @@ qc.ConfirmView = qc.View.extend({
 			this.model.changeAccount(account);
 			this.render();
 		}
+	},
+
+	verifiyOrder: function() {
+			this.model.update();
 	},
 
 	update: function(data){
@@ -54,7 +66,7 @@ qc.ConfirmView = qc.View.extend({
 			this.model.set('payment_popup', data.payment_popup);
 			this.render();
 		}
-		
+
 		if(data.account && data.account !== this.model.get('account')){
 			this.changeAccount(data.account);
 		}
