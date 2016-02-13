@@ -1,9 +1,10 @@
 <?php
 // HTTP
-define('HTTP_SERVER', 'http://xboxliveguld.se/');
+// define('HTTP_SERVER', 'http://xboxliveguld.se/');
+define('HTTP_SERVER', 'http://www.xboxliveguld.se/');
 
 // HTTPS
-define('HTTPS_SERVER', 'http://xboxliveguld.se/');
+define('HTTPS_SERVER', 'http://www.xboxliveguld.se/');
 
 // DIR
 define('DIR_APPLICATION', '/www/webvol16/2l/cu9ffy6mb8jhi1f/xboxliveguld.se/public_html/catalog/');

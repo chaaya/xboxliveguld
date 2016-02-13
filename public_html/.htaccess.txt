@@ -9,6 +9,10 @@ Options +FollowSymlinks
 # Prevent Directoy listing
 Options -Indexes
 
+# Rewrite non www traffic to www
+RewriteCond %{HTTP_HOST} ^xboxliveguld\.se$ [NC]
+RewriteRule ^(.*)$ http://www.xboxliveguld.se/$1 [L,R=301]
+
 # Prevent Direct Access to files
 <FilesMatch "(?i)((\.tpl|\.ini|\.log|(?<!robots)\.txt))">
  Order deny,allow
